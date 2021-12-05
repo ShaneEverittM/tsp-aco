@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 public class Ant {
     private final List<Integer> pathTaken;
     private int curIdxInPath = 0;
-    private final Map<Integer, Boolean> visited;
+    private final Set<Integer> visited;
     private double tourLength;
     private final int maxCapacity;
     private int currentCapacity;
@@ -16,7 +16,7 @@ public class Ant {
 
     public Ant(int startNodeIdx, int numOfNodes, int maxCapacity) {
         this.pathTaken = new ArrayList<>();
-        this.visited = new HashMap<>();
+        this.visited = new HashSet<>();
         this.rand = new Random();
         this.maxCapacity = maxCapacity;
         this.currentCapacity = maxCapacity;
@@ -69,7 +69,7 @@ public class Ant {
         double totalEdgeWeightage = 0.0;
         for (int i = 0; i < adjMatrix.getSize(); i++) {
             // Node is NOT yet visited
-            if (!visited.containsKey(i)) {
+            if (!visited.contains(i)) {
                 double edgeWeightage = calcEdgeWeightage(
                         adjMatrix.get(getCurNode(), i),
                         pheromones.get(getCurNode(), i)
@@ -110,7 +110,7 @@ public class Ant {
     private void visit(int idx) {
         this.pathTaken.add(idx);
         curIdxInPath++;
-        this.visited.put(idx, true);
+        this.visited.add(idx);
     }
 
     private double calcEdgeWeightage(double edgeCost, double pheromone) {
