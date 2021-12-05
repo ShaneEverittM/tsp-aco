@@ -1,7 +1,10 @@
 package aco;
 
+import java.util.List;
+
 public class ACO {
     private final Matrix adjMatrix;
+    private final List<Demand> demands;
     private final int numOfCities;
     private final int numOfCycles;
     private int curCycle = 0;
@@ -10,27 +13,31 @@ public class ACO {
     private double bestTourLength = Double.MAX_VALUE;
     private String bestTourPath;
 
-    public ACO(Matrix matrix) {
-        adjMatrix = matrix;
+    public ACO(Problem problem) {
+        adjMatrix = problem.adjacencyMatrix;
+        demands = problem.demands;
         numOfCities = adjMatrix.getSize();
         numOfCycles = 2000;
-        initPheromones();
     }
 
     public void run() {
+        initPheromones();
         while (shouldContinue()) {
             initAnts();
-
-            for (int i = 1; i < numOfCities; i++) {
-                for (Ant ant : ants) {
-                    ant.moveToNext(adjMatrix, pheromones);
-                }
-            }
+            updateAnts();
             findBestTour();
             evaporate();
             updatePheromones();
         }
         System.out.printf("Best found TSP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
+    }
+
+    private void updateAnts() {
+        for (int i = 1; i < numOfCities; i++) {
+            for (Ant ant : ants) {
+                ant.moveToNext(adjMatrix, pheromones);
+            }
+        }
     }
 
     private void findBestTour() {
@@ -60,7 +67,7 @@ public class ACO {
     private void updatePheromones() {
         for (Ant ant : ants) {
             double pheromone = Config.getQ3() / ant.getTourLength(adjMatrix);
-            int[] tabu = ant.getTabu();
+            int[] tabu = ant.getPathTaken();
 
             // tabu.length - 1 is important because we don't want to go till the last node
             // and then overflow the i + 1 value
