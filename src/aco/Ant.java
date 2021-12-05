@@ -10,19 +10,21 @@ public class Ant {
     private double tourLength;
     private final int maxCapacity;
     private int currentCapacity;
+    private final int numNodes;
 
     private final String name;
     private final Random rand;
 
-    public Ant(int startNodeIdx, int numOfNodes, int maxCapacity) {
+    public Ant(int antNum, int numNodes, int maxCapacity) {
         this.pathTaken = new ArrayList<>();
         this.visited = new HashSet<>();
         this.rand = new Random();
         this.maxCapacity = maxCapacity;
         this.currentCapacity = maxCapacity;
+        this.numNodes = numNodes;
 
-        this.name = "Ant " + startNodeIdx;
-        visit(startNodeIdx);
+        this.name = "Ant " + antNum;
+        visit(0);
     }
 
     public void moveToNext(Matrix adjMatrix, Matrix pheromones, List<Demand> demands) {
@@ -117,6 +119,10 @@ public class Ant {
         double e = Math.pow(1.0f / edgeCost, Config.getEdgeWeightStrength());
         double p = Math.pow(pheromone, Config.getPheromoneStrength());
         return e * p;
+    }
+
+    public boolean hasVisitedAllNodes() {
+        return this.numNodes == this.visited.size();
     }
 
     public int getCurrentCapacity() {
