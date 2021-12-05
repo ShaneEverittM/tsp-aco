@@ -37,8 +37,8 @@ public class ACO {
     }
 
     private void updateAnts() {
-        for (int i = 1; i < numOfCities; i++) {
-            for (Ant ant : ants) {
+        for (Ant ant : ants) {
+            while (!ant.hasVisitedAllNodes()) {
                 ant.moveToNext(adjMatrix, pheromones, demands);
             }
         }
