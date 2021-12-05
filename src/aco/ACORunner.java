@@ -18,28 +18,47 @@ public class ACORunner {
 
     private static void runAlgorithm(List<String> filePaths) throws IOException {
         for (String filePath : filePaths) {
-            Matrix adjMatrix = parseInput(filePath);
-            ACO aco = new ACO(adjMatrix);
+            Problem problem = parseInput(filePath);
+            ACO aco = new ACO(problem);
             aco.run();
         }
     }
 
-    private static Matrix parseInput(String filePath) throws IOException {
-        try {
-            List<String> lines = Files.readAllLines(Paths.get(filePath));
-            int N = Integer.parseInt(lines.get(0));
-            Matrix adjMatrix = new Matrix(N);
-            for (int i = 1; i < lines.size(); i++) {
-                String[] neighbors = lines.get(i).split("\\s");
-                for (int j = 0; j < neighbors.length; j++) {
-                    adjMatrix.set(i - 1, j, Double.parseDouble(neighbors[j]));
-                }
+    /**
+     * Parse input .vrp file.
+     *
+     * @param filePath path to the .vrp file
+     * @return a new Matrix representing the problem
+     * @throws IOException if read fails or the path doesn't exist
+     */
+    private static Problem parseInput(String filePath) throws IOException, VRPFormatException {
+        var lines = Files.readAllLines(Paths.get(filePath));
+
+        // Pull out the dimension
+        int dimension = Integer.parseInt(lines.get(3).split(":")[1].strip());
+
+        // Empty adjacency matrix
+        var adjMatrix = new Matrix(dimension);
+
+        // Parse coordinates
+        int fromIndex = 7;
+        int toIndex = 7 + dimension;
+        var nodeCoordinates = lines.subList(fromIndex, toIndex).stream().map(NodeCoordinate::fromLine).toList();
+
+        // Populate adjacency matrix with distances
+        for (var pointA : nodeCoordinates) {
+            for (var pointB : nodeCoordinates) {
+                double distance = pointA.distanceFrom(pointB);
+                adjMatrix.set(pointA.index, pointB.index, distance);
             }
-            return adjMatrix;
-        } catch (IOException e) {
-            System.err.println("File read failed");
-            throw e;
         }
+
+        // Parse demands for each node
+        fromIndex = 8 + dimension;
+        toIndex = 8 + dimension * 2;
+        List<Demand> nodeDemands = lines.subList(fromIndex, toIndex).stream().map(Demand::fromLine).toList();
+
+        return new Problem(adjMatrix, nodeDemands);
     }
 
     private static List<String> scanFolder(String folderPath) throws IOException {
@@ -51,8 +70,7 @@ public class ACORunner {
         Files.walkFileTree(Paths.get(folderPath), new SimpleFileVisitor<Path>() {
 
             @Override
-            public FileVisitResult visitFile(Path path,
-                                             BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 if (pathMatcher.matches(path)) {
                     filePaths.add(path.toString());
                 }
@@ -67,6 +85,7 @@ public class ACORunner {
         });
         return filePaths;
     }
+
     private static boolean isFolderInput() {
         return System.getProperty("folder", "false").equalsIgnoreCase("true");
     }
