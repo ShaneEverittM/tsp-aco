@@ -73,9 +73,12 @@ class Demand {
 class Problem {
     Matrix adjacencyMatrix;
     List<Demand> demands;
+    int capacity;
 
-    public Problem(Matrix adjacencyMatrix, List<Demand> demands) {
+
+    public Problem(Matrix adjacencyMatrix, List<Demand> demands, int capacity) {
         this.adjacencyMatrix = adjacencyMatrix;
         this.demands = demands;
+        this.capacity = capacity;
     }
 }

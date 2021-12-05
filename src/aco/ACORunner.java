@@ -16,7 +16,6 @@ public class ACORunner {
         } else {
             runAlgorithm(Collections.singletonList(args[0]));
         }
-
     }
 
     private static void runAlgorithm(List<String> filePaths) throws IOException {
@@ -40,6 +39,9 @@ public class ACORunner {
         // Pull out the dimension
         int dimension = Integer.parseInt(lines.get(3).split(":")[1].strip());
 
+        // Pull out the capacity
+        int capacity = Integer.parseInt(lines.get(5).split(":")[1].strip());
+
         // Empty adjacency matrix
         var adjMatrix = new Matrix(dimension);
 
@@ -61,7 +63,7 @@ public class ACORunner {
         toIndex = 8 + dimension * 2;
         List<Demand> nodeDemands = lines.subList(fromIndex, toIndex).stream().map(Demand::fromLine).toList();
 
-        return new Problem(adjMatrix, nodeDemands);
+        return new Problem(adjMatrix, nodeDemands, capacity);
     }
 
     private static List<String> scanFolder(String folderPath) throws IOException {
