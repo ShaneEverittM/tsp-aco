@@ -5,7 +5,9 @@ import java.util.List;
 public class ACO {
     private final Matrix adjMatrix;
     private final List<Demand> demands;
+    private final int capacity;
     private final int numOfCities;
+    private final int numAnts;
     private final int numOfCycles;
     private int curCycle = 0;
     private Matrix pheromones;
@@ -16,8 +18,10 @@ public class ACO {
     public ACO(Problem problem) {
         adjMatrix = problem.adjacencyMatrix;
         demands = problem.demands;
+        capacity = problem.capacity;
         numOfCities = adjMatrix.getSize();
         numOfCycles = 2000;
+        numAnts = 2;
     }
 
     public void run() {
@@ -29,13 +33,13 @@ public class ACO {
             evaporate();
             updatePheromones();
         }
-        System.out.printf("Best found TSP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
+        System.out.printf("Best found VRP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
     }
 
     private void updateAnts() {
         for (int i = 1; i < numOfCities; i++) {
             for (Ant ant : ants) {
-                ant.moveToNext(adjMatrix, pheromones);
+                ant.moveToNext(adjMatrix, pheromones, demands);
             }
         }
     }
@@ -51,7 +55,7 @@ public class ACO {
             }
         }
         if (isBetterFound) {
-            System.out.printf("New best found TSP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
+            System.out.printf("New best found VRP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
         }
     }
 
@@ -67,19 +71,19 @@ public class ACO {
     private void updatePheromones() {
         for (Ant ant : ants) {
             double pheromone = Config.getQ3() / ant.getTourLength(adjMatrix);
-            int[] tabu = ant.getPathTaken();
+            List<Integer> tabu = ant.getPathTaken();
 
             // tabu.length - 1 is important because we don't want to go till the last node
             // and then overflow the i + 1 value
-            for (int i = 0; i < tabu.length - 1; i++) {
-                int u = tabu[i], v = tabu[i + 1];
+            for (int i = 0; i < tabu.size() - 1; i++) {
+                int u = tabu.get(i), v = tabu.get(i + 1);
                 // Add pheromone to the edges
                 pheromones.set(u, v, pheromones.get(u, v) + pheromone);
                 pheromones.set(v, u, pheromones.get(v, u) + pheromone);
             }
             // Add pheromone to the last edge
-            int first = tabu[0];
-            int last = tabu[tabu.length - 1];
+            int first = tabu.get(0);
+            int last = tabu.get(tabu.size() - 1);
             pheromones.set(first, last, pheromones.get(first, last) + pheromone);
             pheromones.set(last, first, pheromones.get(last, first) + pheromone);
         }
@@ -96,9 +100,9 @@ public class ACO {
     }
 
     private void initAnts() {
-        ants = new Ant[numOfCities];
-        for (int i = 0; i < numOfCities; i++) {
-            ants[i] = new Ant(i, numOfCities);
+        ants = new Ant[numAnts];
+        for (int i = 0; i < numAnts; i++) {
+            ants[i] = new Ant(i, numOfCities, capacity);
         }
     }
 

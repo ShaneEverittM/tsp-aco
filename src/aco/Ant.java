@@ -1,57 +1,70 @@
 package aco;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Ant {
-    private final int[] tabu;
+    private final List<Integer> pathTaken;
+    private int curIdxInPath = 0;
     private final Map<Integer, Boolean> visited;
-    private int curIdxInTabu = 0;
     private double tourLength;
+    private final int maxCapacity;
+    private int currentCapacity;
 
     private final String name;
     private final Random rand;
 
-    public Ant(int startNodeIdx, int numOfNodes) {
-        this.tabu = new int[numOfNodes];
+    public Ant(int startNodeIdx, int numOfNodes, int maxCapacity) {
+        this.pathTaken = new ArrayList<>();
         this.visited = new HashMap<>();
         this.rand = new Random();
+        this.maxCapacity = maxCapacity;
+        this.currentCapacity = maxCapacity;
 
         this.name = "Ant " + startNodeIdx;
         visit(startNodeIdx);
     }
 
-    public void moveToNext(Matrix adjMatrix, Matrix pheromones) {
-        int nextNode = findNextNode(adjMatrix, pheromones);
+    public void moveToNext(Matrix adjMatrix, Matrix pheromones, List<Demand> demands) {
         // Increment the tour length after finding the nextNode and BEFORE marking it as visited
-        tourLength += adjMatrix.get(getCurNode(), nextNode);
+        int curNode = getCurNode();
+
+        if (curNode == 0) {
+            // Reset capacity, we were at depot
+            this.currentCapacity = this.maxCapacity;
+        }
+
+        int nextNode = findNextNode(adjMatrix, pheromones, demands);
+
+        tourLength += adjMatrix.get(curNode, nextNode);
+
+        this.currentCapacity -= demands.get(nextNode).demand;
+
         visit(nextNode);
     }
 
     public double getTourLength(Matrix adjMatrix) {
         // Full tour length is single path length + cost of edge from last to first node
-        return this.tourLength + adjMatrix.get(getCurNode(), this.tabu[0]);
+        return this.tourLength + adjMatrix.get(getCurNode(), this.pathTaken.get(0));
     }
 
     public String getName() {
         return this.name;
     }
 
-    public int[] getTabu() {
-        return this.tabu;
+    public List<Integer> getPathTaken() {
+        return this.pathTaken;
     }
 
     public String getPath() {
-        return Arrays.stream(this.tabu)
-                .mapToObj(String::valueOf)
+        return this.pathTaken
+                .stream()
+                .map(String::valueOf)
                 .collect(Collectors.joining("->"))
-                .concat("->" + this.tabu[0]);
+                .concat("->" + this.pathTaken.get(0));
     }
 
-    private int findNextNode(Matrix adjMatrix, Matrix pheromones) {
+    private int findNextNode(Matrix adjMatrix, Matrix pheromones, List<Demand> demands) {
         Map<Integer, Double> distribution = new HashMap<>();
         double totalEdgeWeightage = 0.0;
         for (int i = 0; i < adjMatrix.getSize(); i++) {
@@ -66,7 +79,14 @@ public class Ant {
             }
         }
 
-        return getNextNodeByProbability(distribution, totalEdgeWeightage);
+        Integer nextNode = getNextNodeByProbability(distribution, totalEdgeWeightage);
+
+        // Can we even move there
+        if (this.currentCapacity < demands.get(nextNode).demand) {
+            nextNode = 0;
+        }
+
+        return nextNode;
     }
 
     private Integer getNextNodeByProbability(Map<Integer, Double> distribution, double totalEdgeWeightage) {
@@ -84,15 +104,30 @@ public class Ant {
     }
 
     private int getCurNode() {
-        return this.tabu[curIdxInTabu - 1];
+        return this.pathTaken.get(curIdxInPath -1);
     }
 
     private void visit(int idx) {
-        this.tabu[curIdxInTabu++] = idx;
+        this.pathTaken.add(idx);
+        curIdxInPath++;
         this.visited.put(idx, true);
     }
 
     private double calcEdgeWeightage(double edgeCost, double pheromone) {
-        return Math.pow(1.0f / edgeCost, Config.getEdgeWeightStrength()) * Math.pow(pheromone, Config.getPheromoneStrength());
+        double e = Math.pow(1.0f / edgeCost, Config.getEdgeWeightStrength());
+        double p = Math.pow(pheromone, Config.getPheromoneStrength());
+        return e * p;
+    }
+
+    public int getCurrentCapacity() {
+        return currentCapacity;
+    }
+
+    public void setCurrentCapacity(int currentCapacity) {
+        this.currentCapacity = currentCapacity;
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
     }
 }
