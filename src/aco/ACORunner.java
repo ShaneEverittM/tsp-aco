@@ -8,12 +8,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class ACORunner {
+    static final String inputPath = "inputs";
+
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            System.out.println("Pass a file name!");
-            return;
+            runAlgorithm(scanFolder(inputPath));
+        } else {
+            runAlgorithm(Collections.singletonList(args[0]));
         }
-        runAlgorithm(Collections.singletonList(args[0]));
+
     }
 
     private static void runAlgorithm(List<String> filePaths) throws IOException {
@@ -63,31 +66,22 @@ public class ACORunner {
 
     private static List<String> scanFolder(String folderPath) throws IOException {
         List<String> filePaths = new ArrayList<>();
-        String glob = "glob:**/*.txt";
-        PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(
-                glob);
+        String glob = "glob:**/*.vrp";
+        PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(glob);
 
-        Files.walkFileTree(Paths.get(folderPath), new SimpleFileVisitor<Path>() {
-
+        Files.walkFileTree(Paths.get(folderPath), new SimpleFileVisitor<>() {
             @Override
-            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                if (pathMatcher.matches(path)) {
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                if (pathMatcher.matches(path))
                     filePaths.add(path.toString());
-                }
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc)
-                    throws IOException {
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 return FileVisitResult.CONTINUE;
             }
         });
         return filePaths;
     }
-
-    private static boolean isFolderInput() {
-        return System.getProperty("folder", "false").equalsIgnoreCase("true");
-    }
-
 }
