@@ -4,30 +4,43 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Ant {
-    private final List<Integer> pathTaken;
-    private int curIdxInPath = 0;
+    // Ant travel history
+    private final Deque<Integer> pathTaken;
+    private double pathLength;
     private final Set<Integer> visited;
-    private double tourLength;
+    private final int totalNumNodes;
+
+    // Ant capacity
     private final int maxCapacity;
     private int currentCapacity;
-    private final int numNodes;
 
+    // Ant name for logging purposes
     private final String name;
-    private final Random rand;
 
-    public Ant(int antNum, int numNodes, int maxCapacity) {
-        this.pathTaken = new ArrayList<>();
+    // Random Number Generator
+    private final Random rng;
+
+    public Ant(int antNum, int totalNumNodes, int maxCapacity) {
+        this.pathTaken = new ArrayDeque<>();
         this.visited = new HashSet<>();
-        this.rand = new Random();
+        this.rng = new Random();
         this.maxCapacity = maxCapacity;
         this.currentCapacity = maxCapacity;
-        this.numNodes = numNodes;
+        this.totalNumNodes = totalNumNodes;
 
         this.name = "Ant " + antNum;
         visit(0);
     }
 
-    public void moveToNext(Matrix adjMatrix, Matrix pheromones, List<Demand> demands) {
+
+    /**
+     * Moves this ant to another node based off distance, pheromones and capacity.
+     *
+     * @param adjMatrix  an adjacency matrix for the problem this ant is a part of
+     * @param pheromones the pheromones on this adjacency matrix
+     * @param nodes      the list of nodes of the graph for this problem
+     */
+    public void moveToNext(Matrix adjMatrix, Matrix pheromones, List<Node> nodes) {
         // Increment the tour length after finding the nextNode and BEFORE marking it as visited
         int curNode = getCurNode();
 
@@ -36,65 +49,59 @@ public class Ant {
             this.currentCapacity = this.maxCapacity;
         }
 
-        int nextNode = findNextNode(adjMatrix, pheromones, demands);
+        int nextNode = findNextNode(adjMatrix, pheromones, nodes);
 
-        tourLength += adjMatrix.get(curNode, nextNode);
+        pathLength += adjMatrix.get(curNode, nextNode);
 
-        this.currentCapacity -= demands.get(nextNode).demand;
+        this.currentCapacity -= nodes.get(nextNode).demand();
 
         visit(nextNode);
     }
 
-    public double getTourLength(Matrix adjMatrix) {
-        // Full tour length is single path length + cost of edge from last to first node
-        return this.tourLength + adjMatrix.get(getCurNode(), this.pathTaken.get(0));
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public List<Integer> getPathTaken() {
-        return this.pathTaken;
-    }
-
-    public String getPath() {
-        return this.pathTaken
-                .stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining("->"))
-                .concat("->" + this.pathTaken.get(0));
-    }
-
-    private int findNextNode(Matrix adjMatrix, Matrix pheromones, List<Demand> demands) {
+    /**
+     * Determines the next node to move to based off distance, pheromones and capacity.
+     *
+     * @param adjMatrix  an adjacency matrix for the problem this ant is a part of
+     * @param pheromones the pheromones on this adjacency matrix
+     * @param nodes      the list of nodes of the graph for this problem
+     * @return the index of the node to move to
+     */
+    private int findNextNode(Matrix adjMatrix, Matrix pheromones, List<Node> nodes) {
         Map<Integer, Double> distribution = new HashMap<>();
-        double totalEdgeWeightage = 0.0;
+        double totalEdgeWeight = 0.0;
         for (int i = 0; i < adjMatrix.getSize(); i++) {
             // Node is NOT yet visited
             if (!visited.contains(i)) {
-                double edgeWeightage = calcEdgeWeightage(
+                double edgeWeight = calcEdgeWeight(
                         adjMatrix.get(getCurNode(), i),
                         pheromones.get(getCurNode(), i)
                 );
-                totalEdgeWeightage += edgeWeightage;
-                distribution.put(i, edgeWeightage);
+                totalEdgeWeight += edgeWeight;
+                distribution.put(i, edgeWeight);
             }
         }
 
-        Integer nextNode = getNextNodeByProbability(distribution, totalEdgeWeightage);
+        Integer nextNode = getNextNodeByProbability(distribution, totalEdgeWeight);
 
         // Can we even move there
-        if (this.currentCapacity < demands.get(nextNode).demand) {
+        if (this.currentCapacity < nodes.get(nextNode).demand()) {
             nextNode = 0;
         }
 
         return nextNode;
     }
 
-    private Integer getNextNodeByProbability(Map<Integer, Double> distribution, double totalEdgeWeightage) {
+    /**
+     * Determines the next node based off the weight distribution.
+     *
+     * @param distribution    the weight distribution
+     * @param totalEdgeWeight the total edge weight
+     * @return the index of the next node
+     */
+    private Integer getNextNodeByProbability(Map<Integer, Double> distribution, double totalEdgeWeight) {
         // Copied from https://stackoverflow.com/a/20329901/2950032
-        double rand = this.rand.nextDouble();
-        double ratio = 1.0f / totalEdgeWeightage;
+        double rand = this.rng.nextDouble();
+        double ratio = 1.0f / totalEdgeWeight;
         double tempDist = 0;
         for (Integer i : distribution.keySet()) {
             tempDist += distribution.get(i);
@@ -105,32 +112,71 @@ public class Ant {
         throw new RuntimeException("Vertex not found for some reason");
     }
 
-    private int getCurNode() {
-        return this.pathTaken.get(curIdxInPath -1);
-    }
-
-    private void visit(int idx) {
-        this.pathTaken.add(idx);
-        curIdxInPath++;
-        this.visited.add(idx);
-    }
-
-    private double calcEdgeWeightage(double edgeCost, double pheromone) {
+    /**
+     * Given an edge cost and pheromone level, computes the weight.
+     *
+     * @param edgeCost  the cost from the problem
+     * @param pheromone the pheromone on the edge currently
+     * @return the calculated weight
+     */
+    private double calcEdgeWeight(double edgeCost, double pheromone) {
         double e = Math.pow(1.0f / edgeCost, Config.getEdgeWeightStrength());
         double p = Math.pow(pheromone, Config.getPheromoneStrength());
         return e * p;
     }
 
+    /**
+     * Visits the given node, updates path taken and visited for this Ant.
+     *
+     * @param idx the index of the node to visit
+     */
+    private void visit(int idx) {
+        this.pathTaken.add(idx);
+        this.visited.add(idx);
+    }
+
+    /**
+     * Used as a stop condition for this Ant.
+     *
+     * @return if this ant has hit every node in the graph
+     */
     public boolean hasVisitedAllNodes() {
-        return this.numNodes == this.visited.size();
+        return this.totalNumNodes == this.visited.size();
+    }
+
+    /**
+     * Computes the path length this ant has taken
+     *
+     * @param adjMatrix the adjacency matrix the Ant has been traversing
+     * @return the total weight of the path
+     */
+    public double getPathLength(Matrix adjMatrix) {
+        // Full tour length is single path length + cost of edge from last to first node
+        return this.pathLength + adjMatrix.get(getCurNode(), this.pathTaken.getFirst());
+    }
+
+    public List<Integer> getPathTaken() {
+        return this.pathTaken.stream().toList();
+    }
+
+    private int getCurNode() {
+        return this.pathTaken.getLast();
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getPath() {
+        return this.pathTaken
+                .stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining("->"))
+                .concat("->" + this.pathTaken.getFirst());
     }
 
     public int getCurrentCapacity() {
         return currentCapacity;
-    }
-
-    public void setCurrentCapacity(int currentCapacity) {
-        this.currentCapacity = currentCapacity;
     }
 
     public int getMaxCapacity() {

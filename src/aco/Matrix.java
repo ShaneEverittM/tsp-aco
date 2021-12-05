@@ -37,6 +37,7 @@ public class Matrix {
             LOGGER.log(Level.INFO, "{}", Arrays.toString(matrix[i]));
         }
     }
+
     public int getSize(){
         return this.N;
     }

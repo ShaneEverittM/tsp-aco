@@ -12,12 +12,18 @@ public class ACORunner {
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            runAlgorithm(scanFolder(inputPath));
+            runAlgorithm(scanFolder());
         } else {
             runAlgorithm(Collections.singletonList(args[0]));
         }
     }
 
+    /**
+     * Runs the algorithm on each of a given list of input files.
+     *
+     * @param filePaths a list of file paths containing a VRP
+     * @throws IOException if read fails or path does not exist
+     */
     private static void runAlgorithm(List<String> filePaths) throws IOException {
         for (String filePath : filePaths) {
             Problem problem = parseInput(filePath);
@@ -31,7 +37,7 @@ public class ACORunner {
      *
      * @param filePath path to the .vrp file
      * @return a new Matrix representing the problem
-     * @throws IOException if read fails or the path doesn't exist
+     * @throws IOException if read fails or path does not exist
      */
     private static Problem parseInput(String filePath) throws IOException, VRPFormatException {
         var lines = Files.readAllLines(Paths.get(filePath));
@@ -54,7 +60,7 @@ public class ACORunner {
         for (var pointA : nodeCoordinates) {
             for (var pointB : nodeCoordinates) {
                 double distance = pointA.distanceFrom(pointB);
-                adjMatrix.set(pointA.index, pointB.index, distance);
+                adjMatrix.set(pointA.index(), pointB.index(), distance);
             }
         }
 
@@ -63,15 +69,27 @@ public class ACORunner {
         toIndex = 8 + dimension * 2;
         List<Demand> nodeDemands = lines.subList(fromIndex, toIndex).stream().map(Demand::fromLine).toList();
 
-        return new Problem(adjMatrix, nodeDemands, capacity);
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < dimension; ++i) {
+            var nodeCoordinate = nodeCoordinates.get(i);
+            nodes.add(new Node(nodeCoordinate.x(), nodeCoordinate.y(), nodeDemands.get(i).demand()));
+        }
+
+        return new Problem(adjMatrix, nodes, capacity);
     }
 
-    private static List<String> scanFolder(String folderPath) throws IOException {
+    /**
+     * Scans the given folder for input files.
+     *
+     * @return a list of paths to each VRP file
+     * @throws IOException if directory IO fails
+     */
+    private static List<String> scanFolder() throws IOException {
         List<String> filePaths = new ArrayList<>();
         String glob = "glob:**/*.vrp";
         PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(glob);
 
-        Files.walkFileTree(Paths.get(folderPath), new SimpleFileVisitor<>() {
+        Files.walkFileTree(Paths.get(ACORunner.inputPath), new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
                 if (pathMatcher.matches(path))

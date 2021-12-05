@@ -8,27 +8,13 @@ class VRPFormatException extends RuntimeException {
     public VRPFormatException(String message) {
         super(message);
     }
-
-    public VRPFormatException(Throwable cause) {
-        super(cause);
-    }
-
-    public VRPFormatException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
 }
 
-class NodeCoordinate {
+/**
+ * Represents the position of node at "index".
+ */
+record NodeCoordinate(int index, int x, int y) {
     static Pattern pattern = Pattern.compile("\\s*(?<index>\\w+)\\s*(?<x>\\w+)\\s*(?<y>\\w+)\\s*");
-    int index;
-    int x;
-    int y;
-
-    public NodeCoordinate(int index, int x, int y) {
-        this.index = index;
-        this.x = x;
-        this.y = y;
-    }
 
     public double distanceFrom(NodeCoordinate other) {
         return Math.sqrt((Math.pow(other.y - this.y, 2) + Math.pow(other.x - this.x, 2)));
@@ -45,18 +31,27 @@ class NodeCoordinate {
         }
         throw new VRPFormatException("Failed to parse NodeCoordinate from line: \"" + line + "\"");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!NodeCoordinate.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        NodeCoordinate other = (NodeCoordinate) obj;
+        return this.x == other.x && this.y == other.y;
+    }
 }
 
-
-class Demand {
+/**
+ * Represents the demand of node at "index".
+ */
+record Demand(int index, int demand) {
     static Pattern pattern = Pattern.compile("\\s*(?<index>\\w+)\\s*(?<demand>\\w+)\\s*");
-    int index;
-    int demand;
-
-    public Demand(int index, int demand) {
-        this.index = index;
-        this.demand = demand;
-    }
 
     public static Demand fromLine(String line) {
         var matcher = pattern.matcher(line);
@@ -68,17 +63,24 @@ class Demand {
         }
         throw new VRPFormatException("Failed to parse Demand from line: \"" + line + "\"");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!Demand.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        Demand other = (Demand) obj;
+        return this.demand == other.demand;
+    }
 }
 
-class Problem {
-    Matrix adjacencyMatrix;
-    List<Demand> demands;
-    int capacity;
+record Node(int x, int y, int demand) {
+}
 
-
-    public Problem(Matrix adjacencyMatrix, List<Demand> demands, int capacity) {
-        this.adjacencyMatrix = adjacencyMatrix;
-        this.demands = demands;
-        this.capacity = capacity;
-    }
+record Problem(Matrix adjacencyMatrix, List<Node> nodes, int capacity) {
 }
