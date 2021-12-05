@@ -1,6 +1,8 @@
 package aco;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ACO {
     private final Matrix adjMatrix;
@@ -13,7 +15,7 @@ public class ACO {
     private Matrix pheromones;
     private Ant[] ants;
     private double bestTourLength = Double.MAX_VALUE;
-    private String bestTourPath;
+    private List<Integer> bestTourPath;
 
     public ACO(Problem problem) {
         adjMatrix = problem.adjacencyMatrix;
@@ -44,6 +46,30 @@ public class ACO {
         }
     }
 
+    private String formatPath(List<Integer> path) {
+        int curPathIdx = -1;
+        List<List<Integer>> paths = new ArrayList<>();
+
+        for (int i : path) {
+            if (i == 0) {
+                paths.add(new ArrayList<>());
+                ++curPathIdx;
+            } else {
+                paths.get(curPathIdx).add(i);
+            }
+        }
+
+        List<String> lines = new ArrayList<>();
+
+        for (int i = 0; i < paths.size(); i++) {
+            List<Integer> curPath = paths.get(i);
+            String line = curPath.stream().map(String::valueOf).collect(Collectors.joining(" "));
+            lines.add("Route #" + (i + 1) + ": " +  line);
+        }
+
+        return String.join("\n", lines);
+    }
+
     private void findBestTour() {
         boolean isBetterFound = false;
         for (Ant ant : ants) {
@@ -51,11 +77,12 @@ public class ACO {
             if (bestTourLength > antTourLength) {
                 isBetterFound = true;
                 bestTourLength = antTourLength;
-                bestTourPath = ant.getPath();
+                bestTourPath = ant.getPathTaken();
             }
         }
         if (isBetterFound) {
-            System.out.printf("New best found VRP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
+            System.out.printf("New best found VRP solution of cost %f visiting%n", bestTourLength);
+            System.out.println("Current Paths: \n" + formatPath(bestTourPath));
         }
     }
 
