@@ -125,20 +125,21 @@ public class ACO {
      */
     private void updatePheromones() {
         for (Ant ant : ants) {
+            // Amount of pheromone is based off the quality of the overall path
             double pheromone = Config.getQ3() / ant.getPathLength(adjMatrix);
-            List<Integer> tabu = ant.getPathTaken();
+            List<Integer> pathTaken = ant.getPathTaken();
 
-            // tabu.length - 1 is important because we don't want to go till the last node
+            // pathTaken.length - 1 is important because we don't want to go till the last node
             // and then overflow the i + 1 value
-            for (int i = 0; i < tabu.size() - 1; i++) {
-                int u = tabu.get(i), v = tabu.get(i + 1);
+            for (int i = 0; i < pathTaken.size() - 1; i++) {
+                int u = pathTaken.get(i), v = pathTaken.get(i + 1);
                 // Add pheromone to the edges
                 pheromones.set(u, v, pheromones.get(u, v) + pheromone);
                 pheromones.set(v, u, pheromones.get(v, u) + pheromone);
             }
             // Add pheromone to the last edge
-            int first = tabu.get(0);
-            int last = tabu.get(tabu.size() - 1);
+            int first = pathTaken.get(0);
+            int last = pathTaken.get(pathTaken.size() - 1);
             pheromones.set(first, last, pheromones.get(first, last) + pheromone);
             pheromones.set(last, first, pheromones.get(last, first) + pheromone);
         }
