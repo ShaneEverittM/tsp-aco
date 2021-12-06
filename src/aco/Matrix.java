@@ -1,6 +1,7 @@
 package aco;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +18,10 @@ public class Matrix {
     public double get(int i, int j) {
         validateIndices(i, j);
         return matrix[i][j];
+    }
+
+    public void update(int i, int j, Function<Double, Double> updateFunc) {
+        matrix[i][j] = updateFunc.apply(matrix[i][j]);
     }
 
     public void set(int i, int j, double val) {
