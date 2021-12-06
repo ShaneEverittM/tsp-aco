@@ -15,7 +15,7 @@ public class ACO {
 
     // Ant tracking
     private Ant[] ants;
-    private static final int numAnts = 2;
+    private final int numAnts;
     private Matrix pheromones;
 
     // Time out after some number of cycles
@@ -31,6 +31,7 @@ public class ACO {
         nodes = problem.nodes();
         capacity = problem.capacity();
         numNodes = adjMatrix.getSize();
+        numAnts = numNodes;
     }
 
     /**
