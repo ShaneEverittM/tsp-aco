@@ -1,16 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
+import sys
 
-# In[35]:
-
-
-import numpy as np
 import matplotlib.pyplot as plt
 
 plt.rcParams['figure.figsize'] = [15, 10]
-
-
-# In[54]:
 
 
 def plot_nodes(input_file):
@@ -56,7 +48,8 @@ def plot_routes(output_file, x_coords, y_coords):
         lines = f.readlines()
         for line in lines:
             line = line.strip()
-            if not line.startswith('Route'): continue
+            if not line.startswith('Route'):
+                continue
             _, _, *points = line.split()
             points = [int(each) for each in points]
             sol_x_coords = [x_coords[0]] + [x_coords[i] for i in points] + [x_coords[0]]
@@ -73,7 +66,8 @@ def plot_route(output_file, x_coords, y_coords, route_num):
         lines = f.readlines()
         for line in lines:
             line = line.strip()
-            if not line.startswith('Route #' + str(route_num) + ":"): continue
+            if not line.startswith('Route #' + str(route_num) + ":"):
+                continue
             _, _, *points = line.split()
             points = [int(each) for each in points]
             sol_x_coords = [x_coords[0]] + [x_coords[i] for i in points] + [x_coords[0]]
@@ -85,22 +79,22 @@ def plot_route(output_file, x_coords, y_coords, route_num):
             plt.plot(sol_x_coords, sol_y_coords)
 
 
-# In[57]:
+def main(argv: list[str]):
+    vrp_path = argv[1]
+    sol_path = argv[2]
+    route_num = None
+    if len(argv) >= 4:
+        route_num = argv[3]
+
+    x_coords, y_coords = plot_nodes(vrp_path)
+
+    if route_num is not None:
+        plot_route(sol_path, x_coords, y_coords, route_num)
+    else:
+        plot_routes(sol_path, x_coords, y_coords)
+
+    plt.show()
 
 
-folder = 'A'
-name = 'A-n32-k5'
-sol = 'A-n32-k5'
-
-# folder = 'B'
-# name = 'B-n78-k10'
-
-# folder = 'Golden'
-# name = 'Golden_20'
-# sol = 'Test-Golden_20'
-
-x_coords, y_coords = plot_nodes(f"{folder}/{name}.vrp")
-plot_routes(f"{folder}/{sol}.sol", x_coords, y_coords)
-plt.show()
-
-# In[ ]:
+if __name__ == '__main__':
+    main(sys.argv)
