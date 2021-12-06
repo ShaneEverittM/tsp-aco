@@ -26,15 +26,15 @@ public class Matrix {
 
     private void validateIndices(int i, int j) {
         if (i < 0 || i >= N || j < 0 || j >= N) {
-            LOGGER.log(Level.SEVERE, "Invalid indices: ({}, {})", new Object[]{i, j});
+            LOGGER.log(Level.SEVERE, "Invalid indices: ({0}, {1})", new Object[]{i, j});
             throw new IllegalArgumentException("Invalid indices");
         }
     }
 
     public void print() {
-        LOGGER.log(Level.INFO, "Size: {}", N);
+        LOGGER.log(Level.INFO, "Size: {0}", N);
         for (int i = 0; i < N; i++) {
-            LOGGER.log(Level.INFO, "{}", Arrays.toString(matrix[i]));
+            LOGGER.log(Level.INFO, "{0}", Arrays.toString(matrix[i]));
         }
     }
 
