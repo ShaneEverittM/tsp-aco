@@ -1,7 +1,9 @@
 package aco;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 public class ACO {
@@ -112,10 +114,19 @@ public class ACO {
      * Evaporates the pheromones along all edges.
      */
     private void evaporate() {
+        OptionalDouble maybeAverage = Arrays.stream(ants)
+                .mapToDouble(ant -> ant.getPathLength(adjMatrix))
+                .average();
+
+        if (maybeAverage.isEmpty())
+            throw new RuntimeException("Should never have no ants, yet here we are");
+
+        double evaporationFactor = Config.getRateOfEvaporation() + (Config.getTHETA() / maybeAverage.getAsDouble());
+
         for (int i = 0; i < numNodes; i++) {
             for (int j = i + 1; j < numNodes; j++) {
-                pheromones.set(i, j, pheromones.get(i, j) * Config.getRateOfEvaporation());
-                pheromones.set(j, i, pheromones.get(j, i) * Config.getRateOfEvaporation());
+                pheromones.set(i, j, pheromones.get(i, j) * evaporationFactor);
+                pheromones.set(j, i, pheromones.get(j, i) * evaporationFactor);
             }
         }
     }
