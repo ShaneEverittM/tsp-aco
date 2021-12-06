@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="A-n11-k5.vrp" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="aco.ACORunner" />
+    <module name="aco-blog" />
+    <option name="PROGRAM_PARAMETERS" value="inputs/A-n11-k5.vrp" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="aco.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
