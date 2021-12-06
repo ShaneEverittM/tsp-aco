@@ -13,8 +13,8 @@ class VRPFormatException extends RuntimeException {
 /**
  * Represents the position of node at "index".
  */
-record NodeCoordinate(int index, int x, int y) {
-    static Pattern pattern = Pattern.compile("\\s*(?<index>\\w+)\\s*(?<x>\\w+)\\s*(?<y>\\w+)\\s*");
+record NodeCoordinate(int index, double x, double y) {
+    static Pattern pattern = Pattern.compile("\\s*(?<index>[0-9.]+)\\s*(?<x>[0-9.-]+)\\s*(?<y>[0-9.-]+)\\s*");
 
     public double distanceFrom(NodeCoordinate other) {
         return Math.sqrt((Math.pow(other.y - this.y, 2) + Math.pow(other.x - this.x, 2)));
@@ -24,8 +24,8 @@ record NodeCoordinate(int index, int x, int y) {
         var matcher = pattern.matcher(line);
         if (matcher.find()) {
             var index = Integer.parseInt(matcher.group("index")) - 1;
-            var x = Integer.parseInt(matcher.group("x"));
-            var y = Integer.parseInt(matcher.group("y"));
+            var x = Double.parseDouble(matcher.group("x"));
+            var y = Double.parseDouble(matcher.group("y"));
 
             return new NodeCoordinate(index, x, y);
         }
@@ -51,7 +51,7 @@ record NodeCoordinate(int index, int x, int y) {
  * Represents the demand of node at "index".
  */
 record Demand(int index, int demand) {
-    static Pattern pattern = Pattern.compile("\\s*(?<index>\\w+)\\s*(?<demand>\\w+)\\s*");
+    static Pattern pattern = Pattern.compile("\\s*(?<index>[0-9.]+)\\s*(?<demand>[0-9.]+)\\s*");
 
     public static Demand fromLine(String line) {
         var matcher = pattern.matcher(line);
@@ -79,7 +79,7 @@ record Demand(int index, int demand) {
     }
 }
 
-record Node(int x, int y, int demand) {
+record Node(double x, double y, int demand) {
 }
 
 record Problem(Matrix adjacencyMatrix, List<Node> nodes, int capacity) {
