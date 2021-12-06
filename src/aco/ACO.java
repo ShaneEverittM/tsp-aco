@@ -17,7 +17,7 @@ public class ACO {
     private static final int numElites = 3;
 
     // Time out after some number of cycles
-    private static final int maxCycles = 2000;
+    private static final int maxCycles = 150;
     private int curCycle = 0;
 
     // Best Hamiltonian cycles found by any ant
@@ -106,6 +106,7 @@ public class ACO {
         if (isBetterFound) {
             System.out.printf("New best found VRP solution of cost %f visiting%n", bestTourLength);
             System.out.println("Current Paths: \n" + formatPath(bestTourPath));
+            System.out.println("Current cycle: " + curCycle);
         }
     }
 
