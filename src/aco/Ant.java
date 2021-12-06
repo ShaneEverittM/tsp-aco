@@ -68,13 +68,20 @@ public class Ant {
      */
     private int findNextNode(Matrix adjMatrix, Matrix pheromones, List<Node> nodes) {
         Map<Integer, Double> distribution = new HashMap<>();
+        int curNode = getCurNode();
         double totalEdgeWeight = 0.0;
+
         for (int i = 0; i < adjMatrix.getSize(); i++) {
             // Node is NOT yet visited
             if (!visited.contains(i)) {
+                double distanceToDepot = adjMatrix.get(curNode, 0);
+                double distanceFromDepot = adjMatrix.get(0, i);
+                double distanceToNext = adjMatrix.get(curNode, i);
+                double savings = distanceToDepot + distanceFromDepot - distanceToNext;
+
                 double edgeWeight = calcEdgeWeight(
-                        adjMatrix.get(getCurNode(), i),
-                        pheromones.get(getCurNode(), i)
+                        savings,
+                        pheromones.get(curNode, i)
                 );
                 totalEdgeWeight += edgeWeight;
                 distribution.put(i, edgeWeight);
@@ -115,12 +122,12 @@ public class Ant {
     /**
      * Given an edge cost and pheromone level, computes the weight.
      *
-     * @param edgeCost  the cost from the problem
+     * @param savings  the savings of the edge compared to going back to depot and out again
      * @param pheromone the pheromone on the edge currently
      * @return the calculated weight
      */
-    private double calcEdgeWeight(double edgeCost, double pheromone) {
-        double e = Math.pow(1.0f / edgeCost, Config.getEdgeWeightStrength());
+    private double calcEdgeWeight(double savings, double pheromone) {
+        double e = Math.pow(savings, Config.getEdgeWeightStrength());
         double p = Math.pow(pheromone, Config.getPheromoneStrength());
         return e * p;
     }
