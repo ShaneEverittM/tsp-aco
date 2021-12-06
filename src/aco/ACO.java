@@ -1,9 +1,6 @@
 package aco;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.OptionalDouble;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ACO {
@@ -17,6 +14,7 @@ public class ACO {
     private Ant[] ants;
     private final int numAnts;
     private Matrix pheromones;
+    private static final int numElites = 3;
 
     // Time out after some number of cycles
     private static final int maxCycles = 2000;
@@ -133,27 +131,34 @@ public class ACO {
     }
 
     /**
-     * Updates the pheromones according to the path ants have taken.
+     * Updates the pheromones according the "best of the best" Ants.
      */
     private void updatePheromones() {
-        for (Ant ant : ants) {
-            // Amount of pheromone is based off the quality of the overall path
-            double pheromone = Config.getQ3() / ant.getPathLength(adjMatrix);
-            List<Integer> pathTaken = ant.getPathTaken();
+        Arrays.sort(ants, Comparator.comparingDouble(ant -> ant.getPathLength(adjMatrix)));
 
-            // pathTaken.length - 1 is important because we don't want to go till the last node
-            // and then overflow the i + 1 value
+        // Update path taken by * Ant with the most pheromones
+        Ant starAnt = ants[0];
+        var starPath = starAnt.getPathTaken();
+        for (int i = 0; i < starPath.size() - 1; i++) {
+            double pheromone = numElites / starAnt.getPathLength(adjMatrix);
+            int u = starPath.get(i);
+            int v = starPath.get(i + 1);
+            pheromones.update(u, v, val -> val + pheromone);
+        }
+
+        // Decreasingly update next best lambda ants
+        for (int lambda = 1; lambda < numElites; lambda++) {
+            Ant curAnt = ants[lambda];
+            double pheromone = (numElites - lambda) / curAnt.getPathLength(adjMatrix);
+
+            var pathTaken = curAnt.getPathTaken();
+
             for (int i = 0; i < pathTaken.size() - 1; i++) {
                 int u = pathTaken.get(i), v = pathTaken.get(i + 1);
+
                 // Add pheromone to the edges
-                pheromones.set(u, v, pheromones.get(u, v) + pheromone);
-                pheromones.set(v, u, pheromones.get(v, u) + pheromone);
+                pheromones.update(u, v, val -> val + pheromone);
             }
-            // Add pheromone to the last edge
-            int first = pathTaken.get(0);
-            int last = pathTaken.get(pathTaken.size() - 1);
-            pheromones.set(first, last, pheromones.get(first, last) + pheromone);
-            pheromones.set(last, first, pheromones.get(last, first) + pheromone);
         }
     }
 
