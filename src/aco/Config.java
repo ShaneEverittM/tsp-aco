@@ -11,6 +11,9 @@ public class Config {
     // Rate of evaporation, to help reduce emphasis on existing paths
     private static final double RHO = 0.5;
 
+    // Constant that influences evaporation rate
+    private static final double THETA = 80;
+
     // Just a constant
     private static final double Q3 = 100;
 
@@ -25,6 +28,8 @@ public class Config {
     public static double getRateOfEvaporation() {
         return RHO;
     }
+
+    public static double getTHETA() {return THETA;}
 
     public static double getQ3() {
         return Q3;
