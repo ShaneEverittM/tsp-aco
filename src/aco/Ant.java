@@ -157,12 +157,10 @@ public class Ant {
     /**
      * Computes the path length this ant has taken
      *
-     * @param adjMatrix the adjacency matrix the Ant has been traversing
      * @return the total weight of the path
      */
-    public double getPathLength(Matrix adjMatrix) {
-        // Full tour length is single path length + cost of edge from last to first node
-        return this.pathLength + adjMatrix.get(getCurNode(), this.pathTaken.getFirst());
+    public double getPathLength() {
+        return this.pathLength;
     }
 
     public List<Integer> getPathTaken() {
@@ -191,5 +189,11 @@ public class Ant {
 
     public int getMaxCapacity() {
         return maxCapacity;
+    }
+
+    // Completes the whole path correctly by adding the last node to depot length
+    public void completeMovement(Matrix adjMatrix) {
+        this.pathLength += adjMatrix.get(getCurNode(), 0);
+        visit(0);
     }
 }

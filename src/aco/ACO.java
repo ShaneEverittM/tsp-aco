@@ -60,6 +60,7 @@ public class ACO {
             while (!ant.hasVisitedAllNodes()) {
                 ant.moveToNext(adjMatrix, pheromones, nodes);
             }
+            ant.completeMovement(adjMatrix);
         }
     }
 
@@ -84,7 +85,7 @@ public class ACO {
 
         List<String> lines = new ArrayList<>();
 
-        for (int i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size() - 1; i++) {
             List<Integer> curPath = paths.get(i);
             String line = curPath.stream().map(String::valueOf).collect(Collectors.joining(" "));
             lines.add("Route #" + (i + 1) + ": " + line);
@@ -100,7 +101,7 @@ public class ACO {
     private void findBestTour() {
         boolean isBetterFound = false;
         for (Ant ant : ants) {
-            double antTourLength = ant.getPathLength(adjMatrix);
+            double antTourLength = ant.getPathLength();
             if (bestTourLength > antTourLength) {
                 isBetterFound = true;
                 bestTourLength = antTourLength;
@@ -120,7 +121,7 @@ public class ACO {
      */
     private void evaporate() {
         OptionalDouble maybeAverage = Arrays.stream(ants)
-                .mapToDouble(ant -> ant.getPathLength(adjMatrix))
+                .mapToDouble(ant -> ant.getPathLength())
                 .average();
 
         if (maybeAverage.isEmpty())
@@ -140,13 +141,13 @@ public class ACO {
      * Updates the pheromones according the "best of the best" Ants.
      */
     private void updatePheromones() {
-        Arrays.sort(ants, Comparator.comparingDouble(ant -> ant.getPathLength(adjMatrix)));
+        Arrays.sort(ants, Comparator.comparingDouble(ant -> ant.getPathLength()));
 
         // Update path taken by * Ant with the most pheromones
         Ant starAnt = ants[0];
         var starPath = starAnt.getPathTaken();
         for (int i = 0; i < starPath.size() - 1; i++) {
-            double pheromone = numElites / starAnt.getPathLength(adjMatrix);
+            double pheromone = numElites / starAnt.getPathLength();
             int u = starPath.get(i);
             int v = starPath.get(i + 1);
             pheromones.update(u, v, val -> val + pheromone);
@@ -155,7 +156,7 @@ public class ACO {
         // Decreasingly update next best lambda ants
         for (int lambda = 1; lambda < numElites; lambda++) {
             Ant curAnt = ants[lambda];
-            double pheromone = (numElites - lambda) / curAnt.getPathLength(adjMatrix);
+            double pheromone = (numElites - lambda) / curAnt.getPathLength();
 
             var pathTaken = curAnt.getPathTaken();
 
