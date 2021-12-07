@@ -2,6 +2,7 @@ package aco;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.time.StopWatch;
 
 public class ACO {
     // Problem description
@@ -36,6 +37,8 @@ public class ACO {
      * Runs the simulation for numCycles iterations.
      */
     public void run() {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         initPheromones();
         while (shouldContinue()) {
             initAnts();
@@ -44,7 +47,9 @@ public class ACO {
             evaporate();
             updatePheromones();
         }
+        stopWatch.stop();
         System.out.printf("Best found VRP solution of cost %f visiting %s%n", bestTourLength, bestTourPath);
+        System.out.println("Time to solution: " + stopWatch.formatTime());
     }
 
     /**
