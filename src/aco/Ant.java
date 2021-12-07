@@ -81,7 +81,8 @@ public class Ant {
 
                 double edgeWeight = calcEdgeWeight(
                         savings,
-                        pheromones.get(curNode, i)
+                        pheromones.get(curNode, i),
+                        distanceToNext
                 );
                 totalEdgeWeight += edgeWeight;
                 distribution.put(i, edgeWeight);
@@ -124,12 +125,14 @@ public class Ant {
      *
      * @param savings  the savings of the edge compared to going back to depot and out again
      * @param pheromone the pheromone on the edge currently
+     * @param distanceToNext the distance to the next node
      * @return the calculated weight
      */
-    private double calcEdgeWeight(double savings, double pheromone) {
-        double e = Math.pow(savings, Config.getEdgeWeightStrength());
+    private double calcEdgeWeight(double savings, double pheromone, double distanceToNext) {
+        double e = Math.pow(savings, Config.getSavingsStrength());
         double p = Math.pow(pheromone, Config.getPheromoneStrength());
-        return e * p;
+        double d = Math.pow(1.0f / distanceToNext, Config.getAttractivenessStrength());
+        return e * p * d;
     }
 
     /**

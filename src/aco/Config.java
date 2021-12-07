@@ -3,10 +3,13 @@ package aco;
 public class Config {
     // Power of the pheromone, helps decide how much emphasis on existing trails.
     // Typically, lesser than beta to protect against not discovering more paths.
-    private static final double ALPHA = 1;
+    private static final double ALPHA = 2.0;
 
-    // Power of distance, helps decide how much emphasis on distance
-    private static final double BETA = 2;
+    // Power of the attractiveness
+    private static final double BETA = 5.0;
+    // Power of savings, helps decide how much emphasis on going to a
+    // node vs going back to depot and then the node
+    private static final double GAMMA = 9.0;
 
     // Rate of evaporation, to help reduce emphasis on existing paths
     private static final double RHO = 0.5;
@@ -21,8 +24,8 @@ public class Config {
         return ALPHA;
     }
 
-    public static double getEdgeWeightStrength() {
-        return BETA;
+    public static double getSavingsStrength() {
+        return GAMMA;
     }
 
     public static double getRateOfEvaporation() {
@@ -33,5 +36,9 @@ public class Config {
 
     public static double getQ3() {
         return Q3;
+    }
+
+    public static double getAttractivenessStrength() {
+         return BETA;
     }
 }
