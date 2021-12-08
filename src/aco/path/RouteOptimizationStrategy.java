@@ -24,7 +24,7 @@ public abstract class RouteOptimizationStrategy {
         // Add 0 before and after to get the complete paths for optimizations
         for (List<Integer> p : paths) {
             p.add(0);
-            p.set(0, 0);
+            p.add(0, 0);
         }
 
         paths.remove(paths.size() - 1);
@@ -33,10 +33,11 @@ public abstract class RouteOptimizationStrategy {
     }
 
     protected List<Integer> convertToSinglePath(List<List<Integer>> paths) {
-        var path = paths.stream().reduce(new ArrayList<>(), (subArray, array) -> {
+        var path = paths.stream().reduce(new ArrayList<>(paths.size()), (subArray, array) -> {
             // Remove the last zero
-            array.remove(array.size() - 1);
-            subArray.addAll(array);
+            for (int i = 0; i < array.size() - 1; i++) {
+                subArray.add(array.get(i));
+            }
             return subArray;
         });
         // Add 0 to the end again
