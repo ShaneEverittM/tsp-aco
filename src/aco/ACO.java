@@ -2,6 +2,9 @@ package aco;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import aco.path.optimize.NoOpStrategy;
+import aco.path.optimize.TwoOptStrategy;
 import org.apache.commons.lang3.time.StopWatch;
 
 public class ACO {
@@ -61,6 +64,7 @@ public class ACO {
                 ant.moveToNext(adjMatrix, pheromones, nodes);
             }
             ant.completeMovement(adjMatrix);
+            ant.optimizePath(adjMatrix, new NoOpStrategy());
         }
     }
 

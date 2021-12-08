@@ -1,11 +1,14 @@
 package aco;
 
+import aco.path.RouteOptimizationStrategy;
+import aco.path.optimize.OptimizedPathInfo;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Ant {
     // Ant travel history
-    private final Deque<Integer> pathTaken;
+    private Deque<Integer> pathTaken;
     private double pathLength;
     private final Set<Integer> visited;
     private final int totalNumNodes;
@@ -195,5 +198,11 @@ public class Ant {
     public void completeMovement(Matrix adjMatrix) {
         this.pathLength += adjMatrix.get(getCurNode(), 0);
         visit(0);
+    }
+
+    public void optimizePath(Matrix adjMatrix, RouteOptimizationStrategy routeOptimizationStrategy) {
+        OptimizedPathInfo optimizedPathInfo = routeOptimizationStrategy.optimize(this.getPathTaken(), adjMatrix);
+        this.pathLength = optimizedPathInfo.pathLength();
+        this.pathTaken = new ArrayDeque<>(optimizedPathInfo.path());
     }
 }
