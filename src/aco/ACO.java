@@ -64,7 +64,7 @@ public class ACO {
                 ant.moveToNext(adjMatrix, pheromones, nodes);
             }
             ant.completeMovement(adjMatrix);
-            ant.optimizePath(adjMatrix, new NoOpStrategy());
+            ant.optimizePath(adjMatrix, new TwoOptStrategy());
         }
     }
 
