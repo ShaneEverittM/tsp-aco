@@ -1,12 +1,12 @@
-# Traveling Salesperson Problem using Ant Colony
+# Capacitated Vehicle Routing Problem (CVRP)
 
-This is supporting code for my blog [here]()
+This is supporting code for the final project for Introduction to Optimization (CS268P). 
 
 ## How to run
 
 1. `git clone git@github.com:maazadeeb/tsp-aco.git`
 1. `cd tsp-aco`
-1. Import it to your IDE of choice or even compile and run via command line (`javac *.java && java ACORunner <path to folder>/input.txt`)
-1. The `main` function is in the `ACORnner` class
-
-Note: You can edit the `input.txt` to give large matrix inputs and try it out. It's quite fast for upto 200 vertices. Starts slowly degrading post that 
+1. Import it to your IDE of choice. IntelliJ IDEA is already setup here.
+1. The `main` function is in the `ACORunner` class
+1. It needs a VRP file of this [form](http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/A/A-n32-k5.vrp) from [http://vrp.galgos.inf.puc-rio.br/](http://vrp.galgos.inf.puc-rio.br/).
+1. This input should be passed on from the `inputs` directory on the root folder. Example structure is `inputs/A-n32-k5.vrp`
